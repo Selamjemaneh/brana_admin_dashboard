@@ -11,11 +11,11 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ userEmail, onMenuClick }: AdminHeaderProps) {
   return (
-    <header className="border-b border-accent/20 bg-gradient-to-r from-card via-card to-accent/5 px-4 sm:px-6 py-4 flex items-center justify-between shadow-sm transition-colors duration-300">
+    <header className="border-b border-accent/20 bg-gradient-to-r from-card to-card px-4 sm:px-6 py-4 flex items-center justify-between shadow-sm transition-colors duration-300">
       <div className="flex items-center gap-4 flex-1 min-w-0">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="md:hidden hover:bg-primary/10 transition-colors duration-200"
           onClick={onMenuClick}
         >
@@ -30,7 +30,7 @@ export function AdminHeader({ userEmail, onMenuClick }: AdminHeaderProps) {
           </p>
         </div>
       </div>
-      
+
       <div className="ml-4">
         <ThemeToggle />
       </div>
