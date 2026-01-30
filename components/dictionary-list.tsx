@@ -6,23 +6,47 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { mockDictionaries, languageCodes, type Dictionary } from '@/lib/mock-data'
-import { Eye, Edit2, BookMarked, Star } from 'lucide-react'
+import { languageCodes } from '@/lib/mock-data'
+import { Eye, Edit2, Star, Loader2 } from 'lucide-react'
 import { formatDate } from '@/lib/date-utils'
+import { useAppDispatch, useAppSelector } from '@/app/state/hooks'
+import { fetchDictionaries } from '@/app/state/slice/dictionarySlice'
+import { useEffect } from 'react'
+import { EditDictionaryDialog } from '@/app/admin/dictionaries/edit/edit-dictionary-dialog'
+import { ViewDictionaryDialog } from '@/components/view-dictionary-dialog'
 
 export function DictionaryList() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState('All')
+  const [editingDictionary, setEditingDictionary] = useState<any>(null)
+  const [viewingDictionary, setViewingDictionary] = useState<any>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+
+  const dispatch = useAppDispatch()
+  const { dictionaries, loading, error } = useAppSelector((state) => state.dictionary)
+
+  useEffect(() => {
+    dispatch(fetchDictionaries())
+  }, [dispatch])
 
   const filteredDictionaries = useMemo(() => {
-    return mockDictionaries.filter((dictionary) => {
+    return dictionaries.filter((dictionary) => {
       const matchesSearch = dictionary.name.toLowerCase().includes(searchQuery.toLowerCase())
 
       const matchesLanguage = selectedLanguage === 'All' || dictionary.language_code === selectedLanguage
 
       return matchesSearch && matchesLanguage
     })
-  }, [searchQuery, selectedLanguage])
+  }, [searchQuery, selectedLanguage, dictionaries])
+
+  if (loading && dictionaries.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -74,8 +98,8 @@ export function DictionaryList() {
             <TableBody>
               {filteredDictionaries.length > 0 ? (
                 filteredDictionaries.map((dictionary) => (
-                  <TableRow 
-                    key={dictionary._id} 
+                  <TableRow
+                    key={dictionary._id}
                     className="border-b border-border transition-all duration-200 hover:bg-primary/5"
                   >
                     <TableCell>
@@ -88,9 +112,13 @@ export function DictionaryList() {
                     </TableCell>
                     <TableCell className="text-center">
                       {dictionary.is_premium ? (
-                        <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 mx-auto" title="Premium" />
+                        <div className="flex items-center justify-center group cursor-help" title="Premium Content">
+                          <Star className="w-5 h-5 text-[#FFD700] fill-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]" />
+                        </div>
                       ) : (
-                        <Star className="w-5 h-5 text-white border border-border mx-auto" title="Free" />
+                        <div className="flex items-center justify-center group cursor-help opacity-40 hover:opacity-100 transition-opacity duration-300" title="Free Content">
+                          <Star className="w-5 h-5 text-[#FFD700] border-[#FFD700]" />
+                        </div>
                       )}
                     </TableCell>
                     <TableCell className="text-center text-muted-foreground text-xs sm:text-sm">
@@ -98,18 +126,30 @@ export function DictionaryList() {
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1 sm:gap-2">
-                        <Link href={`/admin/dictionaries/${dictionary._id}`}>
-                          <Button variant="ghost" size="sm" className="text-xs sm:text-sm hover:bg-primary/10 h-8">
-                            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline ml-1">View</span>
-                          </Button>
-                        </Link>
-                        <Link href={`/admin/dictionaries/${dictionary._id}/edit`}>
-                          <Button variant="ghost" size="sm" className="text-xs sm:text-sm hover:bg-primary/10 h-8">
-                            <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline ml-1">Edit</span>
-                          </Button>
-                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs sm:text-sm hover:bg-primary/10 h-8"
+                          onClick={() => {
+                            setViewingDictionary(dictionary)
+                            setIsViewDialogOpen(true)
+                          }}
+                        >
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline ml-1">View</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs sm:text-sm hover:bg-primary/10 h-8"
+                          onClick={() => {
+                            setEditingDictionary(dictionary)
+                            setIsEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline ml-1">Edit</span>
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -125,6 +165,24 @@ export function DictionaryList() {
           </Table>
         </div>
       </div>
+
+      <EditDictionaryDialog
+        dictionary={editingDictionary}
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false)
+          setEditingDictionary(null)
+        }}
+      />
+
+      <ViewDictionaryDialog
+        dictionary={viewingDictionary}
+        isOpen={isViewDialogOpen}
+        onClose={() => {
+          setIsViewDialogOpen(false)
+          setViewingDictionary(null)
+        }}
+      />
     </div>
   )
 }
