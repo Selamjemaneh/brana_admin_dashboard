@@ -54,15 +54,13 @@ export default function AdminDashboard() {
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card 
-              key={stat.title} 
-              className={`border overflow-hidden transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
-                stat.isHighlight 
-                  ? 'bg-gradient-to-br from-accent/15 to-accent/5 border-accent/40' 
+            <Card
+              key={stat.title}
+              className={`border overflow-hidden transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${stat.isHighlight
+                  ? 'bg-gradient-to-br from-accent/15 to-accent/5 border-accent/40'
                   : 'bg-gradient-to-br from-primary/5 to-transparent border-border hover:border-accent/30'
-              }`}
+                }`}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-5 -mr-16 -mt-16" style={{background: stat.isHighlight ? '#d4af37' : '#1F2A37'}} />
               <CardHeader className="pb-4 relative z-10">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -73,10 +71,9 @@ export default function AdminDashboard() {
                       {stat.value}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-xl ${stat.isHighlight ? 'bg-accent/20' : 'bg-primary/10'}`}>
-                    <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${
-                      stat.isHighlight ? 'text-accent' : 'text-primary'
-                    }`} />
+                  <div className={`p-3}`}>
+                    <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${stat.isHighlight ? 'text-accent' : 'text-primary'
+                      }`} />
                   </div>
                 </div>
               </CardHeader>

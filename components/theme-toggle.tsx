@@ -20,12 +20,11 @@ export function ThemeToggle() {
   const isDark = theme === 'dark'
 
   const toggleTheme = () => {
-    const newTheme = isDark ? 'light' : 'dark'
-    console.log('[v0] Theme toggle clicked, switching to:', newTheme, 'from:', theme)
+    const newTheme = isDark ? 'light' : 'dark'  
     setTheme(newTheme)
     // Force a re-render and update the document
     setTimeout(() => {
-      console.log('[v0] After setTheme, current theme:', theme)
+      console.log('[brana_admin_dashboard] After setTheme, current theme:', theme)
     }, 100)
   }
 
@@ -34,7 +33,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="hover:bg-accent/15 group transition-all duration-300 rounded-lg relative"
+      className="hover:bg-accent/15 group transition-all duration-300 rounded-full relative"
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
