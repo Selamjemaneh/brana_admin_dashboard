@@ -18,12 +18,6 @@ export default function DictionariesPage() {
             Manage biblical dictionaries and their metadata
           </p>
         </div>
-        <Link href="/admin/dictionaries/new" className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-xl">
-            <Plus className="w-4 h-4" />
-            Add Dictionary
-          </Button>
-        </Link>
       </div>
 
       {/* Dictionary List */}
