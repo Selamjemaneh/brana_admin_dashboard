@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Book, BookOpen, BookMarked, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAppDispatch } from '@/app/state/hooks'
+import { logout } from '@/app/state/slice/authSlice'
+import { useRouter } from 'next/navigation'
 
 const navItems = [
   {
@@ -30,6 +33,14 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
+  const router = useRouter()
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault()
+    dispatch(logout())
+    router.push('/login')
+  }
 
   const sidebarClasses = cn(
     'w-64 bg-card border-r border-border flex flex-col transition-all duration-300',
@@ -41,7 +52,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 md:hidden z-40"
           onClick={onClose}
         />
@@ -53,7 +64,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           <div className="flex items-center gap-3">
             <div className="text-4xl font-serif font-bold bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent">⚓</div>
             <div>
-              <h1 className="font-serif text-lg font-bold text-primary">Bible Admin</h1>
+              <h1 className="font-serif text-lg font-bold text-primary">Brana Gospel Admin</h1>
               <p className="text-xs text-muted-foreground">Resource Manager</p>
             </div>
           </div>
@@ -64,7 +75,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
-            
+
             return (
               <Link
                 key={item.href}
@@ -88,17 +99,14 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           })}
         </nav>
 
-        {/* Logout */}
         <div className="p-4 border-t border-border">
-          <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-foreground hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400"
-            >
-              <LogOut className="w-5 h-5 flex-shrink-0" />
-              <span className="font-medium text-sm">Logout</span>
-            </button>
-          </form>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-foreground hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400"
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span className="font-medium text-sm">Logout</span>
+          </button>
         </div>
       </aside>
     </>
