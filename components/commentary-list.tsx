@@ -6,25 +6,50 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { mockCommentaries, languageCodes, type Commentary } from '@/lib/mock-data'
-import { Eye, Edit2, BookMarked, Star } from 'lucide-react'
+import { languageCodes } from '@/lib/mock-data'
+import { Eye, Edit2, Star, Loader2 } from 'lucide-react'
 import { formatDate } from '@/lib/date-utils'
+import { useAppDispatch, useAppSelector } from '@/app/state/hooks'
+import { fetchCommentaries } from '@/app/state/slice/commentarySlice'
+import { useEffect } from 'react'
+import { EditCommentaryDialog } from '@/app/admin/commentaries/edit/edit-commentary-dialog'
+import { ViewCommentaryDialog } from '@/components/view-commentary-dialog'
 
 export function CommentaryList() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState('All')
+  const [editingCommentary, setEditingCommentary] = useState<any>(null)
+  const [viewingCommentary, setViewingCommentary] = useState<any>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+
+  const dispatch = useAppDispatch()
+  const { commentaries, loading, error } = useAppSelector((state) => state.commentary)
+
+  useEffect(() => {
+    dispatch(fetchCommentaries())
+  }, [dispatch])
 
   const filteredCommentaries = useMemo(() => {
-    return mockCommentaries.filter((commentary) => {
+    return commentaries.filter((commentary) => {
       const matchesSearch =
         commentary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        commentary.author.toLowerCase().includes(searchQuery.toLowerCase())
+        (commentary.author && commentary.author.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesLanguage = selectedLanguage === 'All' || commentary.language_code === selectedLanguage
 
       return matchesSearch && matchesLanguage
     })
-  }, [searchQuery, selectedLanguage])
+  }, [searchQuery, selectedLanguage, commentaries])
+
+  if (loading && commentaries.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -77,8 +102,8 @@ export function CommentaryList() {
             <TableBody>
               {filteredCommentaries.length > 0 ? (
                 filteredCommentaries.map((commentary) => (
-                  <TableRow 
-                    key={commentary._id} 
+                  <TableRow
+                    key={commentary._id}
                     className="border-b border-border transition-all duration-200 hover:bg-primary/5"
                   >
                     <TableCell>
@@ -92,9 +117,13 @@ export function CommentaryList() {
                     </TableCell>
                     <TableCell className="text-center">
                       {commentary.is_premium ? (
-                        <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 mx-auto" title="Premium" />
+                        <div className="flex items-center justify-center group cursor-help" title="Premium Content">
+                          <Star className="w-5 h-5 text-[#FFD700] fill-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]" />
+                        </div>
                       ) : (
-                        <Star className="w-5 h-5 text-white border border-border mx-auto" title="Free" />
+                        <div className="flex items-center justify-center group cursor-help opacity-40 hover:opacity-100 transition-opacity duration-300" title="Free Content">
+                          <Star className="w-5 h-5 text-[#FFD700] border-[#FFD700]" />
+                        </div>
                       )}
                     </TableCell>
                     <TableCell className="text-center text-muted-foreground text-xs sm:text-sm">
@@ -102,18 +131,30 @@ export function CommentaryList() {
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1 sm:gap-2">
-                        <Link href={`/admin/commentaries/${commentary._id}`}>
-                          <Button variant="ghost" size="sm" className="text-xs sm:text-sm hover:bg-primary/10 h-8">
-                            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline ml-1">View</span>
-                          </Button>
-                        </Link>
-                        <Link href={`/admin/commentaries/${commentary._id}/edit`}>
-                          <Button variant="ghost" size="sm" className="text-xs sm:text-sm hover:bg-primary/10 h-8">
-                            <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline ml-1">Edit</span>
-                          </Button>
-                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs sm:text-sm hover:bg-primary/10 h-8"
+                          onClick={() => {
+                            setViewingCommentary(commentary)
+                            setIsViewDialogOpen(true)
+                          }}
+                        >
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline ml-1">View</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs sm:text-sm hover:bg-primary/10 h-8"
+                          onClick={() => {
+                            setEditingCommentary(commentary)
+                            setIsEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline ml-1">Edit</span>
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -129,6 +170,24 @@ export function CommentaryList() {
           </Table>
         </div>
       </div>
+
+      <EditCommentaryDialog
+        commentary={editingCommentary}
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false)
+          setEditingCommentary(null)
+        }}
+      />
+
+      <ViewCommentaryDialog
+        commentary={viewingCommentary}
+        isOpen={isViewDialogOpen}
+        onClose={() => {
+          setIsViewDialogOpen(false)
+          setViewingCommentary(null)
+        }}
+      />
     </div>
   )
 }
