@@ -9,56 +9,40 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { useAppDispatch, useAppSelector } from '../state/hooks'
+import { login } from '../state/slice/authSlice'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const { loading: isLoading, error } = useAppSelector((state) => state.auth)
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+    const resultAction = await dispatch(login({ email, password }))
+
+    if (login.fulfilled.match(resultAction)) {
+      toast({
+        title: 'Success',
+        description: 'Logged in successfully',
       })
-
-      if (response.ok) {
-        toast({
-          title: 'Success',
-          description: 'Logged in successfully',
-        })
-        router.push('/admin')
-      } else {
-        const error = await response.json()
-        toast({
-          title: 'Error',
-          description: error.message || 'Invalid credentials',
-          variant: 'destructive',
-        })
-      }
-    } catch (error) {
+      router.push('/admin')
+    } else {
       toast({
         title: 'Error',
-        description: 'Something went wrong',
+        description: (resultAction.payload as string) || 'Invalid credentials',
         variant: 'destructive',
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background via-secondary/20 to-accent/5 px-4 py-6 relative overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5 -mr-48 -mt-48" style={{background: '#d4af37'}} />
-      <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full opacity-5 -ml-48 -mb-48" style={{background: '#1F2A37'}} />
-      
+
       <Card className="w-full max-w-md shadow-2xl border border-accent/30 rounded-2xl relative z-10 overflow-hidden bg-card/98 backdrop-blur-sm">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
         <CardHeader className="space-y-3 text-center">
@@ -67,7 +51,7 @@ export default function LoginPage() {
               <div className="text-4xl font-serif text-white">⚓</div>
             </div>
           </div>
-          <CardTitle className="font-serif text-3xl sm:text-4xl text-primary">Bible Admin</CardTitle>
+          <CardTitle className="font-serif text-3xl sm:text-4xl text-primary">Brana Gospel Admin</CardTitle>
           <CardDescription className="text-center text-xs sm:text-sm">
             Access your biblical resources management dashboard
           </CardDescription>
@@ -114,9 +98,6 @@ export default function LoginPage() {
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            Demo: Use any email and password
-          </p>
         </CardContent>
       </Card>
     </div>
